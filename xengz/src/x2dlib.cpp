@@ -29,7 +29,7 @@ namespace fox
     ***************************************************************************/
     DllExport BOOL V2isnan(const Vec2D& a)
     {
-        return (abs(a.x - NAN) < EPSILON && abs(a.y - NAN) < EPSILON);
+        return (fabs(a.x - NAN) < EPSILON && fabs(a.y - NAN) < EPSILON);
     }
 
     /***************************************************************************

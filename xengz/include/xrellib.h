@@ -87,9 +87,9 @@ namespace fox
     # RETURN : TRUE      : Thuộc vào đoạn thẳng                                     
     #          FALSE     : Không thuộc đoạn thẳng                                   
     *******************************************************************************/
-    BOOL DllExport V2in_segment(const Vec2D& p1,    // Điểm Start L          [input]
-                                const Vec2D& p2,    // Điểm End   L          [input]
-                                Vec2D& a );         // Điểm xét             [output]
+    BOOL DllExport V2point_on_bound_segment(const Vec2D& p1, // Điểm Start L [input]
+                                            const Vec2D& p2, // Điểm End   L [input]
+                                                  Vec2D& a );// Điểm xét    [output]
 
 
     /*******************************************************************************
@@ -97,9 +97,9 @@ namespace fox
     # RETURN : TRUE      : Thuộc vào đoạn thẳng                                     
     #          FALSE     : Không thuộc đoạn thẳng                                   
     *******************************************************************************/
-    BOOL DllExport V2point_on_segment(const Vec2D& p1,  // Điểm Start L      [input]
-                                      const Vec2D& p2,  // Điểm End   L      [input]
-                                      Vec2D& a );       // Điểm xét         [output]
+    BOOL DllExport V2point_on_segment(const Vec2D& pt1,  // Điểm Start L      [input]
+                                      const Vec2D& pt2,  // Điểm End   L      [input]
+                                            Vec2D& pt ); // Điểm xét         [output]
 
 
     /*******************************************************************************
@@ -179,7 +179,7 @@ namespace fox
     # RETURN : Tọa độ điểm có giá trị x và y nhỏ nhất                               
     #                                                                               
     *******************************************************************************/
-    INT DllExport V2get_minpoint_poly(const Ap2D& xap, Vec2D &pmin);
+    INT DllExport V2get_minpoint_poly(const Ap2D& xap, Vec2D *pmin= NULL);
 
     /*******************************************************************************
     # Sắp xếp mảng điểm theo phong cách nhất định                                   

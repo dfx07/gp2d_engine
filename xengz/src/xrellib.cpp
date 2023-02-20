@@ -137,14 +137,14 @@ namespace fox
     #          FALSE     : Không thuộc đoạn thẳng                                   
     #[Author]: DesertFox       - [Date] : 12/11/2020                                
     *******************************************************************************/
-    BOOL V2in_segment(  const Vec2D& p1,    // Điểm Start L                  [input]
-                        const Vec2D& p2,    // Điểm End   L                  [input]
-                        Vec2D& a )          // Điểm xét                     [output]
+    BOOL V2point_on_bound_segment(  const Vec2D& p1,    // Điểm Start L      [input]
+                                    const Vec2D& p2,    // Điểm End   L      [input]
+                                    Vec2D& a )          // Điểm xét         [output]
     {
         if(utils::IsGreaterOrEqual(a.x,std::min<FLT>(p1.x, p2.x)) &&
            utils::IsSmallerOrEqual(a.x,std::max<FLT>(p1.x, p2.x)) &&
            utils::IsGreaterOrEqual(a.y,std::min<FLT>(p1.y, p2.y)) &&
-           utils::IsSmallerOrEqual(a.y,std::max<FLT>(p1.y, p2.y))   )
+           utils::IsSmallerOrEqual(a.y,std::max<FLT>(p1.y, p2.y)) )
         {
             return TRUE;
         }
@@ -157,17 +157,26 @@ namespace fox
     #          FALSE     : Không thuộc đoạn thẳng                                   
     #[Author]: DesertFox       - [Date] : 12/11/2020                                
     *******************************************************************************/
-    BOOL V2point_on_segment(const Vec2D& p1,       // Điểm Start L           [input]
-                            const Vec2D& p2,       // Điểm End   L           [input]
-                            Vec2D& a )             // Điểm xét              [output]
+    BOOL V2point_on_segment(const Vec2D& pt1,          // Điểm Start L       [input]
+                            const Vec2D& pt2,          // Điểm End   L       [input]
+                                  Vec2D& pt )          // Điểm xét          [output]
     {
-        Vec2D p1a = V2sub(a, p1); // Vector p1a ;
-        Vec2D p2a = V2sub(a, p2); // Vector p2a ;
+        Vec2D p1a = V2sub(pt, pt1); // Vector p1a ;
+        Vec2D p2a = V2sub(pt, pt2); // Vector p2a ;
 
         FLT crs = V2crs(p1a, p2a);
+
+        // 3 collinear point if cross product isqual 0
         if (utils::IsEqual(crs, 0.0))
         {
-            return TRUE;
+            FLT dist_p1p  = V2mag(p1a);
+            FLT dist_p2p  = V2mag(p2a);
+            FLT dist_p1p2 = V2mag(V2sub(pt1, pt2));
+
+            if (dist_p1p <= dist_p1p2 && dist_p2p <= dist_p1p2)
+            {
+                return TRUE;
+            }
         }
         return FALSE;
     }
@@ -196,22 +205,20 @@ namespace fox
 
         FLT det = a*b1 - b*a1;
 
-        // Hai đoạn thẳng song song dường như không cắt nhau
-        if(utils::IsEqual(det , 0.0 , EPSILON_MED))
+        Vec2D pInter; V2nan(pInter);
+        BOOL binter = FALSE;
+
+        // Hai đường thẳng không song song dường như cắt nhau
+        if(utils::IsEqual(det , 0.0 , EPSILON_MED) == FALSE)
         {
-            if (pOutInter)
-            {
-                V2nan(*pOutInter);
-            }
-            return FALSE;
+            pInter.x = (b1 * c - b * c1) / det;
+            pInter.y = (a * c1 - a1 * c) / det;
+            binter = TRUE;
         }
-        // Hai đường thẳng căt nhau tìm giao điểm
-        if (pOutInter)
-        {
-            pOutInter->x = (b1*c - b*c1) / det;
-            pOutInter->y = (a*c1 - a1*c) / det;
-        }
-        return TRUE;
+
+        if (pOutInter) *pOutInter = pInter;
+
+        return binter;
     }
 
     /*******************************************************************************
@@ -226,50 +233,21 @@ namespace fox
                               const Vec2D& p4,           // Điểm End   L2    [input]
                               Vec2D* pOutInter/*=NULL*/) // Giao điểm       [output]
     {
-        // Phương trình đường thẳng AB: ax + by = c
-        FLT a = p2.y - p1.y;
-        FLT b = p1.x - p2.x;
-        FLT c = a*(p1.x) + b*(p1.y);
+        Vec2D pInter; V2nan(pInter);
+        BOOL bInter = FALSE;
 
-        // Phương trình đường thẳng CD : a1x + b1y = c1
-        FLT a1 = p4.y - p3.y;
-        FLT b1 = p3.x - p4.x;
-        FLT c1 = a1*(p3.x) + b1*(p3.y);
-
-        FLT det = a*b1 - b*a1;
-
-        // Hai đoạn thẳng song song dường như không cắt nhau
-        if(utils::IsEqual(det , 0.0 , EPSILON_MED))
+        if (V2intersect_2line(p1, p2, p3, p4, &pInter) == TRUE)
         {
-            if (pOutInter)
+            if (V2point_on_segment(p1, p2, pInter) &&
+                V2point_on_segment(p3, p4, pInter))
             {
-                V2nan(*pOutInter);
-            }
-            return FALSE;
-        }
-
-        // Hai đường thẳng căt nhau tìm giao điểm
-        Vec2D inter;
-        inter.x = (b1*c - b*c1) / det;
-        inter.y = (a*c1 - a1*c) / det;
-
-        if (V2in_segment(p1, p2, inter) && V2in_segment(p3, p4, inter))
-        {
-            if (pOutInter)
-            {
-                *pOutInter = inter;
-            }
-            return TRUE;
-        }
-        else
-        {
-            if (pOutInter)
-            {
-                V2nan(*pOutInter);
+                bInter = TRUE;
             }
         }
-        // Tất cả đều không cắt 
-        return FALSE;
+
+        if (pOutInter) *pOutInter = pInter;
+
+        return bInter;
     }
 
     /*******************************************************************************
@@ -441,7 +419,7 @@ namespace fox
 
         Ap2D boOut; 
         // 1. Tìm điểm min trong danh sách các điểm                 
-        INT indMin = V2get_minpoint_poly(xap, Vec2D());
+        INT indMin = V2get_minpoint_poly(xap, NULL);
         if(indMin <= -1) return boOut;
 
         // 2. Sắp xếp theo tứ tự góc từ các điểm còn lại đến điểm min
@@ -486,26 +464,32 @@ namespace fox
     # RETURN : Tọa độ điểm có giá trị x và y nhỏ nhất                               
     # [Author]: DesertFox       - [Date] : 12/11/2020                                
     *******************************************************************************/
-    INT DllExport V2get_minpoint_poly(const Ap2D& xap, Vec2D &pmin)
+    INT DllExport V2get_minpoint_poly(const Ap2D& xap, Vec2D* pmin/* = NULL*/)
     {
-        // Khởi tạo ban đầu   tại vị trí 0,0
-        INT index = -1; pmin = { 0,0 };
-        // Nó sẽ ưu tiên là x rồi đến y
         if (xap.np <= 0)
-        {
             return -1;
-        }
+
+        // Khởi tạo giá trị vô định cho
+        Vec2D ptmin;
+        V2nan(ptmin);
+
+        // Khởi tạo ban đầu   tại vị trí 0,0
+        INT index = -1;
+
         // Khởi tạo bằng điểm đầu tiên tại vị trí 0
-        index = 0 ; pmin = xap[0];
+        index = 0 ; ptmin = xap[0];
         for (INT i = 1; i < xap.np; i++)
         {
-            if (xap[i].x < pmin.x || xap[i].y < pmin.y)
+            if (xap[i].x < ptmin.x || xap[i].y < ptmin.y)
             {
-                pmin = xap[i];
+                ptmin = xap[i];
                 index = i;
                 continue;
             }
         }
+
+        if (pmin)  *pmin = ptmin;
+
         return index;
     }
 
