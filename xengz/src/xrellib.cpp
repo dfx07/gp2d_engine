@@ -181,6 +181,73 @@ namespace fox
         return FALSE;
     }
 
+
+    /*******************************************************************************
+    # Kiểm tra một điểm thuộc 1 đường thẳng cho bởi 2 điểm                          
+    # RETURN : TRUE      : Thuộc vào đường thẳng                                    
+    #          FALSE     : Không thuộc đường thẳng                                  
+    #[Author]: DesertFox       - [Date] : 05/03/2023                                
+    *******************************************************************************/
+    BOOL V2point_on_line(const Vec2D& pt1,             // Điểm Start L       [input]
+                         const Vec2D& pt2,             // Điểm End   L       [input]
+                               Vec2D& pt )             // Điểm xét          [output]
+    {
+        Vec2D p1a = V2sub(pt, pt1); // Vector p1a ;
+        Vec2D p2a = V2sub(pt, pt2); // Vector p2a ;
+
+        FLT crs = V2crs(p1a, p2a);
+
+        // 3 collinear point if cross product isqual 0
+        if (utils::IsEqual(crs, 0.0))
+        {
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    /*******************************************************************************
+    # Kiểm tra một điểm thuộc 1 đường thẳng cho 1 điểm và 1 vector đơn vị           
+    # RETURN : TRUE      : Thuộc vào đường thẳng                                    
+    #          FALSE     : Không thuộc đường thẳng                                  
+    #[Author]: DesertFox       - [Date] : 05/03/2023                                
+    *******************************************************************************/
+    BOOL V2point_on_line2(const Vec2D& p,               // Điểm Start L      [input]
+                          const Vec2D& v,               // Vector đơn vị     [input]
+                                Vec2D& pc )             // Điểm xét         [output]
+    {
+        Vec2D ppt = V2sub(pc, p);
+
+        FLT crs = V2crs(v, ppt);
+
+        // 3 collinear point if cross product isqual 0
+        if (utils::IsEqual(crs, 0.0))
+        {
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    /*******************************************************************************
+    # Kiểm tra một điểm thuộc một tia                                               
+    # RETURN : TRUE      : Thuộc vào tia                                            
+    #          FALSE     : Không thuộc tia                                          
+    #[Author]: DesertFox       - [Date] : 05/03/2023
+    *******************************************************************************/
+    BOOL V2point_on_ray(const Vec2D& p,                 // Điểm bắt đầu tia  [input]
+                        const Vec2D& v,                 // vector đơn vị tia [input]
+                              Vec2D& pc )               // Điểm xét         [output]
+    {
+        Vec2D v_ppc = V2uint(V2sub(pc, p));
+
+        if (V2point_on_line2(v_ppc, v, pc))
+        {
+            return (v_ppc.x* v.x) > 0 &&
+                   (v_ppc.y* v.y) > 0;
+        }
+
+        return FALSE;
+    }
+
     /*******************************************************************************
     # Kiểm tra và lấy giao điểm giữa hai đường thẳng cho bởi 2 điểm                 
     # RETURN : TRUE      : Giao nhau                                                
